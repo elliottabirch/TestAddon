@@ -1,0 +1,22 @@
+## Interface: 110007
+## Title: Test Addon
+## Notes: Describe your addon.
+## Author: Your Name
+## Version: 1.0.0
+## RequiredDeps:
+## X-Curse-Project-ID: 999999
+## SavedVariables:
+## SavedVariablesPerCharacter: TestAddonDB
+## Dependencies: Hekili, WeakAuras
+#@no-lib-strip@
+libs\AceAddon-3.0\AceAddon-3.0.xml
+libs\AceEvent-3.0\AceEvent-3.0.xml
+#@end-no-lib-strip@
+
+constants.lua
+spellsInFlight.lua
+inFlightVisualizer.lua
+TestAddon.lua
+DataFrames.lua
+Blood_Dk_Data_frames.lua
+mage_fire_Dataframes.lua
