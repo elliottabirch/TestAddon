@@ -80,7 +80,6 @@ function TestAddon_Recomend(abilityId)
                 end
             end
             if shouldCycle then
-                print("cycle")
                 cycle.back:SetColorTexture(1, 0, 0)
             else
                 cycle.back:SetColorTexture(0, 0, 0)
