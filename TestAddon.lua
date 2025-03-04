@@ -6,17 +6,9 @@ local LSR = LibStub("SpellRange-1.0")
 
 local weakAurasStatus = false
 
-local f = CreateFrame("Frame", "TestBorder", UIParent)
-f:SetSize(2, 2)
-f:SetPoint("TOPLEFT")
-f:SetFrameStrata("TOOLTIP")
+local f = C.CreateCustomFrame("testBorder", 0, 0)
 
-
-f.back = f:CreateTexture(nil, "BACKGROUND", nil, -1)
-f.back:SetAllPoints(f)
-f.back:SetTexture(255 / 255, 100, 100)
-
-local cycle = C.CreateCustomFrame("cycleBorder", 0, 2)
+local cycle = C.CreateCustomFrame("cycleBorder", 0, 1)
 
 
 -- Импортируем WeakAuras, если он не обнаружен

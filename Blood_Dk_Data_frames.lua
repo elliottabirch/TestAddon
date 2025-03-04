@@ -4,21 +4,21 @@ local ns = select(2, ...)
 local constants = C
 
 if UnitName("player") == "Bbjewelctwo" then
-    local aggro = C.CreateCustomFrame("aggroBorder", 0, 5)
-    local singleAggro = C.CreateCustomFrame("singleAggroBorder", 0, 6)
+    local aggro = C.CreateCustomFrame("aggroBorder", 0, 4)
+    local singleAggro = C.CreateCustomFrame("singleAggroBorder", 0, 5)
 
     function IsMouseoverTanked()
         if constants.IsValidUnit("mouseover", constants.blacklisted_mobs) then
             -- Check if Blood Boil is in range
             local inRange = C_Spell.IsSpellInRange(56222, "mouseover")
             if not inRange then
-                return false
+                return 0
             end
             -- Check threat status - returns 0 (no threat), 1 (have threat but not tanking), 2 (tanking), 3 (secure tanking lead)
             local isTanking = UnitDetailedThreatSituation("player", "mouseover")
 
             if inRange and not isTanking and C_Spell.GetSpellCooldown(56222).startTime == 0 then
-                return true
+                return 1
             end
         end
     end
@@ -34,28 +34,20 @@ if UnitName("player") == "Bbjewelctwo" then
                     -- Check threat status - returns 0 (no threat), 1 (have threat but not tanking), 2 (tanking), 3 (secure tanking lead)
                     local isTanking = UnitDetailedThreatSituation("player", unit)
                     if inRange and not isTanking then
-                        return true
+                        return 1
                     end
                 end
             end
         end
 
-        return false
+        return 0
     end
 
     local function updateFrames()
-        if IsNameplateInRangeWithoutAggro() then
-            aggro.back:SetColorTexture(1, 0, 0)
-        else
-            aggro.back:SetColorTexture(0, 0, 0)
-        end
+        aggro.back:SetColorTexture(IsNameplateInRangeWithoutAggro(), 0, 0)
 
-        if IsMouseoverTanked() then
-            print("taunt")
-            singleAggro.back:SetColorTexture(1, 0, 0)
-        else
-            singleAggro.back:SetColorTexture(0, 0, 0)
-        end
+
+        singleAggro.back:SetColorTexture(IsMouseoverTanked(), 0, 0)
     end
 
 

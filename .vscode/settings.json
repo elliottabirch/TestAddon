@@ -20,6 +20,7 @@
         "UISpecialFrames",
         "CombatLog",
         "Settings",
-        "DEFAULT_CHAT_FRAME"
+        "DEFAULT_CHAT_FRAME",
+        "class"
     ]
 }

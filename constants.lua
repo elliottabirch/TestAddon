@@ -12,58 +12,32 @@ C.blacklisted_mobs = {
 }
 ---@type table<string, boolean>
 C.important_interruptable_spells = {
-    ["Tormenting Beam"] = true,
-    ["Hearthstone"] = true,
-    ["Night Bolt"] = true,
-    ["Shadow Bolt"] = true,
-
+    ["Trickshot"] = true,
+    ["Surveying Beam"] = true,
+    ["Cinderblast"] = true,
+    ["Fireball Volley"] = true,
     ["Mole Frenzy"] = true,
-    -- Explosive Flame
     ["Explosive Flame"] = true,
-    -- Flaming Tether
     ["Flaming Tether"] = true,
-    -- Paranoid Mind
-    ["Paranoid Mind"] = true,
-    -- Call Darkspawn
-    ["Call Darkspawn"] = true,
-    -- Drain Light
-    ["Drain Light"] = true
+    ["Drain Light"] = true,
+    ["Free Samples?"] = true,
+    ["Bee-stial Wrath"] = true,
+    ["Honey Volley"] = true,
+    ["Toxic Blades"] = true,
+    ["Rock Lance"] = true,
+    ["Furious Quake"] = true,
+    ["Detonate"] = true,
+    ["Giga-Wallop"] = true,
+    ["Bone Spear"] = true,
+    ["Necrotic Bolt Volley"] = true,
+    ["Withering Discharge"] = true,
 }
 
-C.ams_spells = {
-    ["Tormenting Beam"] = true,
-    ["Night Bolt"] = true,
-    ["Shadow Bolt"] = true,
 
-    ["Mole Frenzy"] = true,
-    -- Explosive Flame
-    ["Explosive Flame"] = true,
-    -- Flaming Tether
-    ["Flaming Tether"] = true,
-    -- Paranoid Mind
-    ["Paranoid Mind"] = true,
-    -- Call Darkspawn
-    ["Call Darkspawn"] = true,
-    -- Drain Light
-    ["Drain Light"] = true
+C.ams_spells = {
 }
 
 C.tank_busters = {
-    ["Tormenting Beam"] = true,
-    ["Night Bolt"] = true,
-    ["Shadow Bolt"] = true,
-
-    ["Mole Frenzy"] = true,
-    -- Explosive Flame
-    ["Explosive Flame"] = true,
-    -- Flaming Tether
-    ["Flaming Tether"] = true,
-    -- Paranoid Mind
-    ["Paranoid Mind"] = true,
-    -- Call Darkspawn
-    ["Call Darkspawn"] = true,
-    -- Drain Light
-    ["Drain Light"] = true
 }
 
 

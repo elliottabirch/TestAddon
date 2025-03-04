@@ -5,8 +5,8 @@ local constants = C
 
 
 
-local mouseover_interrupt = C.CreateCustomFrame("mouseover_interruptBorder", 0, 3)
-local focus_interrupt = C.CreateCustomFrame("focus_interruptBorder", 0, 4)
+local mouseover_interrupt = C.CreateCustomFrame("mouseover_interruptBorder", 0, 2)
+local focus_interrupt = C.CreateCustomFrame("focus_interruptBorder", 0, 3)
 
 function IsUnitCastingSpell(unit, spellNames)
     if not constants.IsValidUnit(unit, constants.blacklisted_mobs) then
@@ -28,7 +28,6 @@ end
 local function updateFrames()
     mouseover_interrupt.back:SetColorTexture(IsUnitCastingSpell("mouseover", constants.important_interruptable_spells), 0,
         0)
-    focus_interrupt.back:SetColorTexture(IsUnitCastingSpell("focus", constants.important_interruptable_spells), 0, 0)
     focus_interrupt.back:SetColorTexture(IsUnitCastingSpell("focus", constants.important_interruptable_spells), 0, 0)
 end
 
