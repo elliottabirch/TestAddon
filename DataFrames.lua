@@ -18,7 +18,6 @@ function IsUnitCastingSpell(unit, spellNames)
         spellName = UnitChannelInfo(unit)
     end
     if spellName and spellNames[spellName] and C_Spell.IsSpellInRange(47528, unit) and C_Spell.GetSpellCooldown(47528).startTime == 0 then
-        print("Interruptable spell detected on " .. unit)
         return 1
     end
 

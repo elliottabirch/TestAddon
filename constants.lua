@@ -29,8 +29,19 @@ C.important_interruptable_spells = {
     ["Detonate"] = true,
     ["Giga-Wallop"] = true,
     ["Bone Spear"] = true,
-    ["Necrotic Bolt Volley"] = true,
+
+    ["Iced Spritzer"] = true,
+    ["Transmute: Enemy to Goo"] = true,
+    ["Tectonic Barrier"] = true,
+    ["Rejuvenating Honey"] = true,
+    ["Unholy Fervor"] = true,
+    ["Demoralizing Shout"] = true,
+
+    ["Spirit Frost"] = true,
+    ["Meat Shield"] = true,
     ["Withering Discharge"] = true,
+    ["Necromantic Bolt"] = true,
+    ["Necrotic Bolt"] = true,
 }
 
 
