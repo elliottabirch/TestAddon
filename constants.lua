@@ -79,10 +79,10 @@ end
 
 C.CreateCustomFrame = function(name, column, row)
     local frame = CreateFrame("Frame", name, UIParent)
-    frame:SetSize(2, 2)
+    frame:SetSize(20, 20)
     frame:SetPoint("TOPLEFT")
     frame:SetFrameStrata("TOOLTIP")
-    frame:AdjustPointsOffset(column * 2, row * -2)
+    frame:AdjustPointsOffset(column * 20, row * -20)
 
 
     frame.back = frame:CreateTexture(nil, "BACKGROUND", nil, -1)

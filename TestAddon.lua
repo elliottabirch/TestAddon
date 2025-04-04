@@ -65,6 +65,10 @@ end
 -- Изменяем код Hekili, чтобы получить доступ к keybind
 function TestAddon_Recomend(abilityId)
     local shouldCycle = false
+    local isCycling = Hekili.State.IsCycling()
+    if isCycling then
+        shouldCycle = true
+    end
     if abilityId then
         if LSR.SpellHasRange(abilityId) == 1 then
             local isInRange = LSR.IsSpellInRange(abilityId, "target")

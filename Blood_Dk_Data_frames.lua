@@ -3,7 +3,7 @@ local ns = select(2, ...)
 ---@type Constants
 local constants = C
 
-if UnitName("player") == "Bbjewelctwo" then
+if UnitName("player") == "Bbjewelctwo" and GetSpecialization() == SPEC_DK_BLOOD then
     local aggro = C.CreateCustomFrame("aggroBorder", 0, 4)
     local singleAggro = C.CreateCustomFrame("singleAggroBorder", 0, 5)
     local shouldAMS = C.CreateCustomFrame("singleAggroBorder", 0, 6)
