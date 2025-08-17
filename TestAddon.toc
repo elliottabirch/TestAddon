@@ -20,3 +20,4 @@ TestAddon.lua
 DataFrames.lua
 Blood_Dk_Data_frames.lua
 mage_fire_Dataframes.lua
+hekili_toggles.lua
