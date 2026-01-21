@@ -98,6 +98,11 @@ local function GetBindingPatternForSlot(slot)
     return nil
 end
 
+local function HasModifier(key)
+    if not key or key == "" then return false end
+    return key:match("SHIFT%-") or key:match("CTRL%-") or key:match("ALT%-")
+end
+
 -- Get the actual keybind for a slot
 local function GetKeybindForSlot(slot)
     local bindingPattern = GetBindingPatternForSlot(slot)
@@ -106,6 +111,9 @@ local function GetKeybindForSlot(slot)
     end
 
     local key = GetBindingKey(bindingPattern)
+    if HasModifier(key) then
+        return nil
+    end
     return key
 end
 
@@ -113,11 +121,17 @@ end
 -- Keybind Formatting
 --------------------------------------------------------------------------------
 
+
+
 -- Abbreviate keybind for display (e.g., "SHIFT-1" -> "S1")
 local function AbbreviateKeybind(key)
     if not key or key == "" then return "" end
 
     local result = key
+
+    if HasModifier(key) then
+        return ""
+    end
 
     -- Abbreviate modifiers
     result = result:gsub("SHIFT%-", "S")
