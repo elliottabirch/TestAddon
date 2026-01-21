@@ -18,6 +18,9 @@ constants.lua
 KeybindNormalizer.lua
 KeybindColorConverter.lua
 
+# Keybind lookup (action bar scanner)
+KeybindLookup.lua
+
 # UI layer
 ColorDisplay.lua
 
