@@ -1,9 +1,11 @@
----@class TestAddon
 --------------------------------------------------------------------------------
--- TestAddon - Test Harness
+-- TestAddon.lua
+-- Main Entry Point
 --
--- Simplified test version that uses static data to verify the color pipeline.
--- No external dependencies (Hekili, WeakAuras, etc.)
+-- Test harness for keybind-to-color conversion system.
+-- Supports two modes:
+--   TEST mode: Cycles through static test keybinds (/ta next, /ta prev)
+--   LIVE mode: Polls C_AssistedCombat for currently suggested spell (/ta live)
 --
 -- Slash Commands:
 --   /ta next     - Show next test keybind
@@ -11,6 +13,8 @@
 --   /ta delay    - Toggle delay state (black = delayed)
 --   /ta auto     - Start/stop auto-cycling through keybinds
 --   /ta status   - Show current keybind and RGB values
+--   /ta live     - Toggle live mode (Assisted Combat)
+--   /ta ls       - Show live mode status
 --
 -- Keybind Lookup Commands:
 --   /ta kb dump    - Show all cached spell keybinds
@@ -34,17 +38,124 @@ local KeybindLookup
 local mainDisplay
 local autoCycleTimer = nil
 
+-- Live mode state
+local liveModeEnabled = false
+local liveUpdateTicker = nil
+local LIVE_UPDATE_INTERVAL = 0.05 -- 50ms = 20 updates/sec
+
 --------------------------------------------------------------------------------
--- Core Processing Pipeline
+-- Live Mode: Assisted Combat Integration
 --------------------------------------------------------------------------------
 
---- Process the current keybind and update display
+--- Get keybind for currently suggested spell from Assisted Combat
+local function GetAssistedCombatKeybind()
+    if not C_AssistedCombat or not C_AssistedCombat.GetNextCastSpell then
+        return nil, nil, nil
+    end
+
+    local success, spellID = pcall(C_AssistedCombat.GetNextCastSpell, true)
+
+    if not success or not spellID or type(spellID) ~= "number" or spellID == 0 then
+        return nil, nil, nil
+    end
+
+    -- Get spell name for display
+    local spellName = nil
+    if C_Spell and C_Spell.GetSpellInfo then
+        local info = C_Spell.GetSpellInfo(spellID)
+        spellName = info and info.name
+    end
+
+    -- Get keybind via KeybindLookup
+    local keybind = nil
+    if KeybindLookup and KeybindLookup.GetSpellKeybind then
+        keybind = KeybindLookup.GetSpellKeybind(spellID)
+    end
+
+    return keybind, spellName, spellID
+end
+
+--- Update display from live Assisted Combat data
+local function UpdateDisplayLive()
+    local keybind, spellName, spellID = GetAssistedCombatKeybind()
+
+    if not keybind then
+        -- No keybind found - show black
+        Display.SetColor(mainDisplay, 0, 0, 0)
+        return
+    end
+
+    -- Normalize and convert to color
+    local normalized = Normalizer.Normalize(keybind)
+    local r, g, b = ColorConverter.ConvertToRGB(normalized)
+
+    Display.SetColor(mainDisplay, r, g, b)
+end
+
+--- Start live mode (continuous updates from Assisted Combat)
+local function StartLiveMode()
+    if liveUpdateTicker then return end
+
+    -- Stop test mode auto-cycle if running
+    if autoCycleTimer then
+        autoCycleTimer:Cancel()
+        autoCycleTimer = nil
+    end
+
+    liveModeEnabled = true
+    liveUpdateTicker = C_Timer.NewTicker(LIVE_UPDATE_INTERVAL, UpdateDisplayLive)
+    DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon|r: Live mode |cff00ff00STARTED|r")
+end
+
+--- Stop live mode
+local function StopLiveMode()
+    if liveUpdateTicker then
+        liveUpdateTicker:Cancel()
+        liveUpdateTicker = nil
+    end
+    liveModeEnabled = false
+    DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon|r: Live mode |cffffff00STOPPED|r")
+end
+
+--- Print live mode status
+local function PrintLiveStatus()
+    local keybind, spellName, spellID = GetAssistedCombatKeybind()
+
+    DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon Live Status:|r")
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("  Mode: %s",
+        liveModeEnabled and "|cff00ff00LIVE|r" or "|cffffff00TEST|r"))
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("  Spell: %s (ID: %s)",
+        spellName or "None", tostring(spellID or "nil")))
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("  Keybind: %s", keybind or "None"))
+
+    if keybind then
+        local normalized = Normalizer.Normalize(keybind)
+        local r, g, b = ColorConverter.ConvertToRGB(normalized)
+        DEFAULT_CHAT_FRAME:AddMessage(string.format("  Normalized: %s", normalized))
+        DEFAULT_CHAT_FRAME:AddMessage(string.format("  RGB: (%.3f, %.3f, %.3f)", r, g, b))
+    end
+
+    -- API check
+    local apiAvailable = C_AssistedCombat and C_AssistedCombat.GetNextCastSpell
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("  API: %s",
+        apiAvailable and "|cff00ff00Available|r" or "|cffff0000Not Available|r"))
+
+    if not apiAvailable then
+        DEFAULT_CHAT_FRAME:AddMessage("  |cffffff00Tip: /console assistedMode 1|r")
+    end
+end
+
+--------------------------------------------------------------------------------
+-- Test Mode: Static Data Processing
+--------------------------------------------------------------------------------
+
+--- Process the current test keybind and update display
 local function UpdateDisplay()
     local keybind = DataSource.GetCurrentKeybind()
 
     if DataSource.IsDelayed() then
         -- Delayed state: show black
-        Display.Clear(mainDisplay)
+        Display.SetColor(mainDisplay, 0, 0, 0)
         return
     end
 
@@ -56,7 +167,7 @@ local function UpdateDisplay()
     Display.SetColor(mainDisplay, r, g, b)
 end
 
---- Print current status to chat
+--- Print current test status to chat
 local function PrintStatus()
     local keybind = DataSource.GetCurrentKeybind()
     local normalized = Normalizer.Normalize(keybind)
@@ -73,24 +184,25 @@ local function PrintStatus()
 end
 
 --------------------------------------------------------------------------------
--- Keybind Lookup Slash Commands
+-- Keybind Lookup Subcommands
 --------------------------------------------------------------------------------
 
 local function HandleKeybindLookupCommand(args)
     if not KeybindLookup then
-        DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon|r: KeybindLookup module not loaded")
+        DEFAULT_CHAT_FRAME:AddMessage("|cffff0000TestAddon|r: KeybindLookup module not loaded")
         return
     end
 
+    -- Parse subcommand
     local subCmd = args:match("^(%S+)") or ""
     local remainder = args:match("^%S+%s+(.+)") or ""
     subCmd = subCmd:lower()
 
     if subCmd == "" or subCmd == "help" then
-        DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon Keybind Lookup Commands:|r")
+        DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon Keybind Lookup:|r")
         DEFAULT_CHAT_FRAME:AddMessage("  /ta kb dump       - Show all cached spell keybinds")
         DEFAULT_CHAT_FRAME:AddMessage("  /ta kb slots      - Show slot -> keybind mappings")
-        DEFAULT_CHAT_FRAME:AddMessage("  /ta kb find <name> - Look up keybind for a spell")
+        DEFAULT_CHAT_FRAME:AddMessage("  /ta kb find <n> - Look up keybind for spell")
         DEFAULT_CHAT_FRAME:AddMessage("  /ta kb refresh    - Force cache refresh")
         DEFAULT_CHAT_FRAME:AddMessage("  /ta kb clear      - Clear all cached data")
         DEFAULT_CHAT_FRAME:AddMessage("  /ta kb diag on|off - Toggle diagnostic logging")
@@ -139,19 +251,51 @@ local function HandleSlashCommand(input)
         return
     end
 
+    -- Live mode commands
+    if cmd == "live" or cmd == "l" then
+        if liveModeEnabled then
+            StopLiveMode()
+        else
+            StartLiveMode()
+        end
+        return
+    end
+
+    if cmd == "livestatus" or cmd == "ls" then
+        PrintLiveStatus()
+        return
+    end
+
+    -- Test mode commands
     if cmd == "next" or cmd == "n" then
+        if liveModeEnabled then
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon|r: Stop live mode first (/ta live)")
+            return
+        end
         DataSource.NextKeybind()
         UpdateDisplay()
         PrintStatus()
     elseif cmd == "prev" or cmd == "p" then
+        if liveModeEnabled then
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon|r: Stop live mode first (/ta live)")
+            return
+        end
         DataSource.PrevKeybind()
         UpdateDisplay()
         PrintStatus()
     elseif cmd == "delay" or cmd == "d" then
+        if liveModeEnabled then
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon|r: Delay not applicable in live mode")
+            return
+        end
         local newState = DataSource.ToggleDelayed()
         UpdateDisplay()
         DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon|r: Delay " .. (newState and "ON (black)" or "OFF (showing color)"))
     elseif cmd == "auto" or cmd == "a" then
+        if liveModeEnabled then
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon|r: Stop live mode first (/ta live)")
+            return
+        end
         if autoCycleTimer then
             autoCycleTimer:Cancel()
             autoCycleTimer = nil
@@ -165,16 +309,26 @@ local function HandleSlashCommand(input)
             DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon|r: Auto-cycle STARTED (1 sec interval)")
         end
     elseif cmd == "status" or cmd == "s" or cmd == "" then
-        PrintStatus()
+        if liveModeEnabled then
+            PrintLiveStatus()
+        else
+            PrintStatus()
+        end
     elseif cmd == "help" or cmd == "?" then
         DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon Commands:|r")
-        DEFAULT_CHAT_FRAME:AddMessage("  /ta next (n)   - Next keybind")
-        DEFAULT_CHAT_FRAME:AddMessage("  /ta prev (p)   - Previous keybind")
-        DEFAULT_CHAT_FRAME:AddMessage("  /ta delay (d)  - Toggle delay state")
-        DEFAULT_CHAT_FRAME:AddMessage("  /ta auto (a)   - Toggle auto-cycle")
-        DEFAULT_CHAT_FRAME:AddMessage("  /ta status (s) - Show current state")
-        DEFAULT_CHAT_FRAME:AddMessage("  /ta kb         - Keybind lookup commands (type /ta kb help)")
-        DEFAULT_CHAT_FRAME:AddMessage("  /ta <keybind>  - Test arbitrary keybind (e.g., /ta CTRL-Q)")
+        DEFAULT_CHAT_FRAME:AddMessage("  |cffffff00Live Mode:|r")
+        DEFAULT_CHAT_FRAME:AddMessage("    /ta live (l)   - Toggle live mode (Assisted Combat)")
+        DEFAULT_CHAT_FRAME:AddMessage("    /ta ls         - Show live mode status")
+        DEFAULT_CHAT_FRAME:AddMessage("  |cffffff00Test Mode:|r")
+        DEFAULT_CHAT_FRAME:AddMessage("    /ta next (n)   - Next keybind")
+        DEFAULT_CHAT_FRAME:AddMessage("    /ta prev (p)   - Previous keybind")
+        DEFAULT_CHAT_FRAME:AddMessage("    /ta delay (d)  - Toggle delay state")
+        DEFAULT_CHAT_FRAME:AddMessage("    /ta auto (a)   - Toggle auto-cycle")
+        DEFAULT_CHAT_FRAME:AddMessage("    /ta status (s) - Show current state")
+        DEFAULT_CHAT_FRAME:AddMessage("  |cffffff00Keybind Lookup:|r")
+        DEFAULT_CHAT_FRAME:AddMessage("    /ta kb         - Keybind lookup commands")
+        DEFAULT_CHAT_FRAME:AddMessage("  |cffffff00Direct Test:|r")
+        DEFAULT_CHAT_FRAME:AddMessage("    /ta <keybind>  - Test any keybind (e.g., /ta CTRL-Q)")
     else
         -- Try to parse as a direct keybind test
         local normalized = Normalizer.Normalize(input)
@@ -198,9 +352,8 @@ function TestAddon:OnInitialize()
     Display = LibStub("TestAddon-ColorDisplay")
     DataSource = LibStub("TestAddon-TestDataSource")
 
-    -- KeybindLookup is a standalone module (not LibStub)
-    -- It's loaded globally when the file loads
-    KeybindLookup = _G.KeybindLookup or KeybindLookup
+    -- KeybindLookup is global (not LibStub)
+    KeybindLookup = _G.KeybindLookup
 
     -- Create display frame
     mainDisplay = Display.CreateWithLegacy("main", 0, 0)
@@ -213,7 +366,15 @@ function TestAddon:OnInitialize()
 end
 
 function TestAddon:OnEnable()
-    -- Show initial keybind
+    -- Check if Assisted Combat API is available
+    if C_AssistedCombat and C_AssistedCombat.GetNextCastSpell then
+        DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00TestAddon|r: Assisted Combat API available. Use /ta live to start.")
+    else
+        DEFAULT_CHAT_FRAME:AddMessage("|cffffff00TestAddon|r: Assisted Combat API not available. Enable with /console assistedMode 1")
+    end
+
+    -- Show initial test keybind
+    StartLiveMode()
     UpdateDisplay()
     PrintStatus()
 end

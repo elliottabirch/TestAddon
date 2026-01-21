@@ -26,6 +26,7 @@ ColorDisplay.lua
 
 # Test data (replaces Hekili integration)
 TestDataSource.lua
+AssistedCombatSource.lua
 
 # Main test harness
 TestAddon.lua

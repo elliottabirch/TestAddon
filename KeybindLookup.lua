@@ -24,11 +24,11 @@ local diagnosticLoggingEnabled = true
 -- Binding patterns for each action bar
 -- Maps bar type to the binding prefix used by WoW
 local BINDING_PATTERNS = {
-    { slots = { 1, 12 },  pattern = "ACTIONBUTTON" },          -- Main bar
-    { slots = { 61, 72 }, pattern = "MULTIACTIONBAR1BUTTON" }, -- Bottom left
-    { slots = { 49, 60 }, pattern = "MULTIACTIONBAR2BUTTON" }, -- Bottom right
-    { slots = { 25, 36 }, pattern = "MULTIACTIONBAR3BUTTON" }, -- Right bar 1
-    { slots = { 37, 48 }, pattern = "MULTIACTIONBAR4BUTTON" }, -- Right bar 2
+    { slots = { 1, 12 },    pattern = "ACTIONBUTTON" },          -- Main bar
+    { slots = { 61, 72 },   pattern = "MULTIACTIONBAR1BUTTON" }, -- Bottom left
+    { slots = { 49, 60 },   pattern = "MULTIACTIONBAR2BUTTON" }, -- Bottom right
+    { slots = { 25, 36 },   pattern = "MULTIACTIONBAR3BUTTON" }, -- Right bar 1
+    { slots = { 37, 48 },   pattern = "MULTIACTIONBAR4BUTTON" }, -- Right bar 2
     { slots = { 145, 156 }, pattern = "MULTIACTIONBAR5BUTTON" }, -- Bar 5
     { slots = { 157, 168 }, pattern = "MULTIACTIONBAR6BUTTON" }, -- Bar 6
     { slots = { 169, 180 }, pattern = "MULTIACTIONBAR7BUTTON" }, -- Bar 7
@@ -37,9 +37,9 @@ local BINDING_PATTERNS = {
 -- Stance/form bar slot ranges (pages 7-10 in WoW's system)
 -- These replace the main bar when in a stance/form
 local STANCE_BAR_SLOTS = {
-    [1] = { 73, 84 }, -- Stance 1 (e.g., Druid Cat Form)
-    [2] = { 85, 96 }, -- Stance 2 (e.g., Druid Bear Form)
-    [3] = { 97, 108 }, -- Stance 3
+    [1] = { 73, 84 },   -- Stance 1 (e.g., Druid Cat Form)
+    [2] = { 85, 96 },   -- Stance 2 (e.g., Druid Bear Form)
+    [3] = { 97, 108 },  -- Stance 3
     [4] = { 109, 120 }, -- Stance 4
 }
 
