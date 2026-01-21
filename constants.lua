@@ -1,93 +1,29 @@
----@class ns
-local ns = select(2, ...)
 ---@class Constants
----@field IsValidUnit fun(unit: string, nameBlackList: table<string, boolean> ): boolean
----@field CreateCustomFrame fun(name: string, column: number , row: number ): table
+---@field CreateCustomFrame fun(name: string, row: number, col: number): Frame
+
 C = {}
 
----@type table<string, boolean>
-C.blacklisted_mobs = {
-    ["Training Dummy"] = true,
-    ["Friendly NPC"] = true,
-}
----@type table<string, boolean>
-C.important_interruptable_spells = {
-    ["Trickshot"] = true,
-    ["Surveying Beam"] = true,
-    ["Cinderblast"] = true,
-    ["Fireball Volley"] = true,
-    ["Mole Frenzy"] = true,
-    ["Explosive Flame"] = true,
-    ["Flaming Tether"] = true,
-    ["Drain Light"] = true,
-    ["Free Samples?"] = true,
-    ["Bee-stial Wrath"] = true,
-    ["Honey Volley"] = true,
-    ["Toxic Blades"] = true,
-    ["Rock Lance"] = true,
-    ["Furious Quake"] = true,
-    ["Detonate"] = true,
-    ["Giga-Wallop"] = true,
-    ["Bone Spear"] = true,
+local FRAME_SIZE = 10
+local FRAME_STRATA = "TOOLTIP"
+local BASE_X = 10
+local BASE_Y = -25
 
-    ["Iced Spritzer"] = true,
-    ["Transmute: Enemy to Goo"] = true,
-    ["Tectonic Barrier"] = true,
-    ["Rejuvenating Honey"] = true,
-    ["Unholy Fervor"] = true,
-    ["Demoralizing Shout"] = true,
-
-    ["Spirit Frost"] = true,
-    ["Meat Shield"] = true,
-    ["Withering Discharge"] = true,
-    ["Necromantic Bolt"] = true,
-    ["Necrotic Bolt"] = true,
-}
-
-
-C.ams_spells = {
-}
-
-C.tank_busters = {
-}
-
-
-C.IsValidUnit = function(unit, nameBlacklist)
-    if not UnitExists(unit) then
-        return false
-    end
-
-    if UnitIsDead(unit) then
-        return false
-    end
-
-    if not UnitAffectingCombat(unit) then
-        return false
-    end
-
-    if not UnitIsEnemy("player", unit) then
-        return false
-    end
-
-    local unitName = UnitName(unit)
-    if unitName and nameBlacklist[unitName] then
-        return false
-    end
-
-    return true
-end
-
-C.CreateCustomFrame = function(name, column, row)
-    local frame = CreateFrame("Frame", name, UIParent)
-    frame:SetSize(5, 5)
-    frame:SetPoint("TOPLEFT")
-    frame:SetFrameStrata("TOOLTIP")
-    frame:AdjustPointsOffset(column * 5, row * -5)
-
+--- Create a colored square frame at a grid position
+---@param name string Unique frame name
+---@param row number Grid row (0-indexed)
+---@param col number Grid column (0-indexed)
+---@return Frame frame The created frame with .back texture
+function C.CreateCustomFrame(name, row, col)
+    local frame = CreateFrame("Frame", "TestAddon_" .. name, UIParent)
+    frame:SetSize(FRAME_SIZE, FRAME_SIZE)
+    frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", BASE_X + (col * FRAME_SIZE), BASE_Y - (row * FRAME_SIZE))
+    frame:SetFrameStrata(FRAME_STRATA)
 
     frame.back = frame:CreateTexture(nil, "BACKGROUND", nil, -1)
     frame.back:SetAllPoints(frame)
-    frame.back:SetTexture(255 / 255, 100, 100)
+    frame.back:SetColorTexture(0, 0, 0, 1)
 
     return frame
 end
+
+return C

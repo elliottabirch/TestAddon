@@ -1,23 +1,28 @@
-## Interface: 110007
+## Interface: 120000
 ## Title: Test Addon
-## Notes: Describe your addon.
+## Notes: Keybind to color visualization - Test Version
 ## Author: Your Name
-## Version: 1.0.0
-## RequiredDeps:
-## X-Curse-Project-ID: 999999
+## Version: 2.0.0-test
 ## SavedVariables:
 ## SavedVariablesPerCharacter: TestAddonDB
-## Dependencies: Hekili, WeakAuras
+
 #@no-lib-strip@
 libs\AceAddon-3.0\AceAddon-3.0.xml
 libs\AceEvent-3.0\AceEvent-3.0.xml
 #@end-no-lib-strip@
 
+# Shared constants (frame factory)
 constants.lua
-spellsInFlight.lua
-inFlightVisualizer.lua
+
+# Core modules - pure logic, no WoW API dependencies
+KeybindNormalizer.lua
+KeybindColorConverter.lua
+
+# UI layer
+ColorDisplay.lua
+
+# Test data (replaces Hekili integration)
+TestDataSource.lua
+
+# Main test harness
 TestAddon.lua
-DataFrames.lua
-Blood_Dk_Data_frames.lua
-mage_fire_Dataframes.lua
-hekili_toggles.lua
